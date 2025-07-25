@@ -1,16 +1,22 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
 from accounts.models import CustomUser
 
+UserModel = get_user_model()
 
-class CustomUserForm(UserCreationForm):
+
+class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm):
-        model = CustomUser
+        model = UserModel
         fields = ('username', 'email', 'profile_picture')
 
         help_texts = {
-            'username': '',
-            'password': '',
-            'email': '',
-            'profile_picture': '',
+            'username': None,
+            'password': None,
+            'email': None,
+            'profile_picture': None,
+            'password1': None,
+            'password2': None
         }
+
