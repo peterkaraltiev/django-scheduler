@@ -7,4 +7,5 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
-    profile_picture = models.ImageField(default='static/pfp_placeholder.jpeg', upload_to='profile_pictures')
+    date_joined = models.DateTimeField(auto_now_add=True)
+    profile_picture = models.ImageField(default='profile_pictures/pfp_placeholder.jpeg', upload_to='profile_pictures')
