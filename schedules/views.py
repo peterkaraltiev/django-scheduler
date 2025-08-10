@@ -4,10 +4,11 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 
 # Create your views here.
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView
 from django.shortcuts import redirect, render
 from .models import Schedule
-from .forms import ScheduleForm, TaskFormSet
+from .forms import ScheduleForm, TaskFormSet, CommentForm
+
 
 class ScheduleCreateView(LoginRequiredMixin, CreateView):
     model = Schedule
@@ -35,3 +36,27 @@ class ScheduleCreateView(LoginRequiredMixin, CreateView):
                 task.save()
             return redirect('home')  # or wherever you want
         return render(request, self.template_name, {'form': form, 'formset': formset})
+
+
+class ScheduleDetailView(LoginRequiredMixin, DetailView):
+    model = Schedule
+    template_name = 'schedules/schedule_details.html'
+    context_object_name = 'schedule'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comment_form'] = CommentForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.schedule = self.object
+            comment.save()
+            return redirect('schedule_detail', pk=self.object.pk)
+        context = self.get_context_data()
+        context['comment_form'] = form
+        return self.render_to_response(context)

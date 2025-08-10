@@ -6,36 +6,72 @@
     <div class="container py-5">
     <div class="text-center mb-5">
         <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3" width="120" height="120" style="object-fit: cover;">
-        <h2 class="fw-bold">John Doe</h2>
-        <p class="text-muted">john.doe@example.com</p>
-        <p>Joined: January 2024</p>
+        <h2 class="fw-bold">{{ user.username }}</h2>
+        <p class="text-muted">{{ user.email }}</p>
+        <p>Joined: {{ user.date_joined | date:"M d, Y" }}</p>
     </div>
 
     <hr>
 
     <h3 class="mb-4">Your Schedules</h3>
-    <div class="row g-4">
-        {% for i in "123456789" %}
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body d-flex justify-content-between align-items-start">
-                    <div class="me-3">
-                        <h5 class="card-title">title</h5>
-                        <p class="card-text">{{ schedule.description|default:"No description provided." }}</p>
-                    </div>
-{#                    {% if schedule.image %}#}
-                    <img src="/media/schedules_pictures/placeholder_schedule.jpeg" alt="Schedule Image"
-                         class="rounded" width="80" height="80" style="object-fit: cover;">
-{#                    {% endif %}#}
+    {% for schedule in schedules %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <img src="{{ schedule.picture.url }}" class="card-img-top" alt="{{ schedule.title }}" style="height: 200px; object-fit: cover;">
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ schedule.title }}</h5>
+                    <p class="card-text">{{ schedule.description|truncatewords:20 }}</p>
+
+                    <ul class="list-group list-group-flush">
+                        {% for task in schedule.tasks.all|slice:":2" %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ task.description }}</span>
+                                <span class="badge bg-secondary">{{ task.time|time:"H:i" }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <a href="{% url 'schedule_detail' schedule.pk %}" class="btn btn-primary btn-sm mt-3">View Full Schedule</a>
                 </div>
-                <div class="card-footer text-muted">
-                    Posted on {{ schedule.created_at|date:"M d, Y" }}
+
+                <div class="card-footer text-muted small">
+                    Posted by <strong>{{ schedule.user.username }}</strong>
+                    <img src="{{ schedule.user.profile_picture.url }}" alt="Profile Picture"
+                     class="rounded-circle" width="35" height="35" style="object-fit: cover;">
                 </div>
             </div>
         </div>
         {% empty %}
-        <p class="text-muted">You don't have any schedules yet.</p>
+        <p>No schedules found.</p>
         {% endfor %}
-    </div>
 </div>
+
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if schedules.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ schedules.previous_page_number }}">Previous</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        {% for num in schedules.paginator.page_range %}
+            {% if schedules.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if schedules.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ schedules.next_page_number }}">Next</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}

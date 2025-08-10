@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
+from django import forms
 
 from accounts.models import CustomUser
 
@@ -18,5 +19,11 @@ class CustomUserCreationForm(UserCreationForm):
             'profile_picture': None,
             'password1': None,
             'password2': None
+        }
+        widgets = {
+            'profile_picture': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*',
+            })
         }
 

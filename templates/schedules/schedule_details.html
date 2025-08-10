@@ -1,0 +1,86 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="card shadow-sm mb-4 position-relative">
+    <div class="row g-0">
+        <div class="col-md-4">
+            <img src="{{ schedule.picture.url }}" class="img-fluid rounded-start" alt="{{ schedule.title }}">
+        </div>
+        <div class="col-md-8">
+            <div class="card-body">
+                <h2 class="card-title">{{ schedule.title }}</h2>
+                <p class="text-muted mb-1">By {{ schedule.user.username }} • {{ schedule.date }}</p>
+                <p class="card-text">{{ schedule.description|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- User info in bottom right corner -->
+    <div style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center;">
+        <a class="nav-link" href="{% url 'profile_view' schedule.user.pk %}">
+            <img
+            src="{{ schedule.user.profile_picture.url }}"
+            alt="{{ schedule.user.username }}'s profile picture"
+            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd; margin-right: 8px;">
+            <span style="font-weight: 600;">{{ schedule.user.username }}</span>
+        </a>
+    </div>
+</div>
+
+    <div class="mb-4">
+        <h4>Tasks</h4>
+        <ul class="list-group">
+            {% for task in schedule.tasks.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ task.description }}
+                    <span class="badge bg-primary rounded-pill">{{ task.time }}</span>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">No tasks yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="mb-3">Leave a Comment</h4>
+            <form method="post">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button type="submit" class="btn btn-success">Post Comment</button>
+            </form>
+        </div>
+    </div>
+
+<div class="mt-4">
+    <h4>Comments</h4>
+    {% for comment in schedule.comments.all %}
+        <div class="d-flex align-items-start mb-3 p-3 rounded shadow-sm" style="background-color: #f8f9fa;">
+            <a class="nav-link" href="{% url 'profile_view' schedule.user.id %}">
+                <img src="{{ comment.user.profile_picture.url }}"
+                 alt="{{ comment.user.username }}'s avatar"
+                 class="rounded-circle me-3"
+                 style="width:50px; height:50px; object-fit:cover; border: 2px solid #dee2e6;">
+
+            </a>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <a class="nav-link" href="{% url 'profile_view' schedule.user.id %}">
+                        <strong>{{ comment.user.username }}</strong>
+                    </a>
+                    <small class="text-muted">{{ comment.created|date:"M d, Y H:i" }}</small>
+                </div>
+                <p class="mb-0">{{ comment.text|linebreaks }}</p>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-muted">No comments yet. Be the first to comment!</p>
+    {% endfor %}
+</div>
+
+
+</div>
+{% endblock %}
