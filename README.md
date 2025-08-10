@@ -12,7 +12,7 @@ A simple scheduling web application built with Django that allows users to creat
 ## Tech Stack
 - **Backend:** Django 5.x
 - **Frontend:** Bootstrap 5, JavaScript
-- **Database:** Postgresql (default), can be changed via `.env`
+- **Database:** Postgresql can be changed via `.env`
 - **Version Control:** Git
 
 ## Installation
