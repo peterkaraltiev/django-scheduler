@@ -1,13 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms import modelformset_factory
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 
 # Create your views here.
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView
 from django.shortcuts import redirect, render
-from .models import Schedule, Comments
-from .forms import ScheduleForm, TaskFormSet, CommentForm
+from .models import Schedule, Comments, Tasks
+from .forms import ScheduleForm, TaskFormSet, CommentForm, TaskForm
 
 
 class ScheduleCreateView(LoginRequiredMixin, CreateView):
@@ -66,27 +67,60 @@ class ScheduleDetailView(LoginRequiredMixin, DetailView):
 class ScheduleEditView(UpdateView):
     model = Schedule
     form_class = ScheduleForm
-    template_name = 'schedules/schedule_edit.html'
-    success_url = reverse_lazy('home')
+    template_name = 'schedules/schedule_edit.html'  # you'll create this
+    context_object_name = 'schedule'
 
-    # def get_context_data(self, **kwargs):
-    #     schedule = get_object_or_404(Schedule, pk=self.object.pk)
-    #     form = ScheduleForm(self.request.POST or None, self.request.FILES or None, instance=schedule)
-    #     formset = TaskFormSet(self.request.POST or None, instance=schedule)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        TaskFormSet = modelformset_factory(Tasks, form=TaskForm, extra=0, can_delete=True)
+
+        if self.request.POST:
+            context['formset'] = TaskFormSet(self.request.POST, queryset=self.object.tasks.all())
+        else:
+            context['formset'] = TaskFormSet(queryset=self.object.tasks.all())
+
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+
+        if formset.is_valid():
+            self.object = form.save()
+            tasks = formset.save(commit=False)
+
+            for task in tasks:
+                task.schedule = self.object
+                task.save()
+
+            for task in formset.deleted_objects:
+                task.delete()
+
+            return redirect(self.get_success_url())
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+    def get_success_url(self):
+        return reverse_lazy('schedule_detail', kwargs={'pk': self.object.pk})
 
 class ScheduleDeleteView(DeleteView):
     model = Schedule
-    success_url = reverse_lazy('home')
     template_name = 'schedules/schedule_delete.html'
+    success_url = reverse_lazy('home')
 
 
 class CommentEditView(UpdateView):
     model = Comments
     form_class = CommentForm
     template_name = 'schedules/comment_edit.html'
-    success_url = reverse_lazy('home')
+
+    def get_success_url(self):
+        return reverse_lazy('schedule_detail', kwargs={'pk': self.object.schedule.pk})
 
 class CommentDeleteView(DeleteView):
     model = Comments
-    success_url = reverse_lazy('home')
     template_name = 'schedules/comment_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('schedule_detail', kwargs={'pk': self.object.schedule.pk})

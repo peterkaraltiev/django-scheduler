@@ -23,6 +23,7 @@ class ScheduleForm(forms.ModelForm):
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Tasks
+        exclude = ['schedule']
         fields = ['description', 'time']
         widgets = {
             'time': forms.TimeInput(attrs={'type': 'time'}),

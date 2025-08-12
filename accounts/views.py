@@ -38,7 +38,9 @@ class ProfileEditView(UpdateView):
     model = CustomUser
     form_class = CustomUserCreationForm
     template_name = 'accounts/profile_edit.html'
-    success_url = reverse_lazy('home')
+
+    def get_success_url(self):
+        return reverse_lazy('profile_view', kwargs={'pk': self.object.pk})
 
 class ProfileDeleteView(DeleteView):
     model = CustomUser
