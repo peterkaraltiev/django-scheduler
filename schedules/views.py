@@ -1,12 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 
 # Create your views here.
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, UpdateView, DeleteView
 from django.shortcuts import redirect, render
-from .models import Schedule
+from .models import Schedule, Comments
 from .forms import ScheduleForm, TaskFormSet, CommentForm
 
 
@@ -46,6 +46,7 @@ class ScheduleDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['comment_form'] = CommentForm()
+        context['is_moderator'] = self.request.user.groups.filter(name='Moderator').exists()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -60,3 +61,32 @@ class ScheduleDetailView(LoginRequiredMixin, DetailView):
         context = self.get_context_data()
         context['comment_form'] = form
         return self.render_to_response(context)
+
+
+class ScheduleEditView(UpdateView):
+    model = Schedule
+    form_class = ScheduleForm
+    template_name = 'schedules/schedule_edit.html'
+    success_url = reverse_lazy('home')
+
+    # def get_context_data(self, **kwargs):
+    #     schedule = get_object_or_404(Schedule, pk=self.object.pk)
+    #     form = ScheduleForm(self.request.POST or None, self.request.FILES or None, instance=schedule)
+    #     formset = TaskFormSet(self.request.POST or None, instance=schedule)
+
+class ScheduleDeleteView(DeleteView):
+    model = Schedule
+    success_url = reverse_lazy('home')
+    template_name = 'schedules/schedule_delete.html'
+
+
+class CommentEditView(UpdateView):
+    model = Comments
+    form_class = CommentForm
+    template_name = 'schedules/comment_edit.html'
+    success_url = reverse_lazy('home')
+
+class CommentDeleteView(DeleteView):
+    model = Comments
+    success_url = reverse_lazy('home')
+    template_name = 'schedules/comment_delete.html'

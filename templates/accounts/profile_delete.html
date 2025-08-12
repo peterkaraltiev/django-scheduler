@@ -1,0 +1,11 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<h2>Delete Profile</h2>
+<p>Are you sure you want to delete the Profile "{{ object.username }}"?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+    <a href="{% url 'profile_view' object.pk %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

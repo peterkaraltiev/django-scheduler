@@ -8,4 +8,5 @@ from accounts.models import CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
+    readonly_fields = ('date_joined',)
     list_display = ('username', 'email', 'is_staff', 'is_active', 'is_superuser')

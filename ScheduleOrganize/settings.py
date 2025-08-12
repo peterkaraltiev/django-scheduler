@@ -98,7 +98,8 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "perfect_plan_database",
         "USER": "postgres",
-        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+        # "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+        "PASSWORD": "PEpi7777",
         "HOST": "127.0.0.1",
         "PORT": "5432",
     }

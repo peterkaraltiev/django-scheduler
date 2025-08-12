@@ -8,34 +8,42 @@
  <div class="row">
         {% for schedule in schedules %}
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <img src="{{ schedule.picture.url }}" class="card-img-top" alt="{{ schedule.title }}" style="height: 200px; object-fit: cover;">
+        <div class="card shadow-sm">
+            <img src="{{ schedule.picture.url }}" class="card-img-top" alt="{{ schedule.title }}" style="height: 200px; object-fit: cover;">
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ schedule.title }}</h5>
-                    <p class="card-text">{{ schedule.description|truncatewords:20 }}</p>
+        <div class="card-body">
+            <h5 class="card-title">{{ schedule.title }}</h5>
+            <p class="card-text">{{ schedule.description|truncatewords:20 }}</p>
 
-                    <ul class="list-group list-group-flush">
-                        {% for task in schedule.tasks.all|slice:":2" %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ task.description }}</span>
-                                <span class="badge bg-secondary">{{ task.time|time:"H:i" }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
+            <ul class="list-group list-group-flush">
+                {% for task in schedule.tasks.all|slice:":2" %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ task.description }}</span>
+                        <span class="badge bg-secondary">{{ task.time|time:"H:i" }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
 
-                    <a href="{% url 'schedule_detail' schedule.pk %}" class="btn btn-primary btn-sm mt-3">View Full Schedule</a>
+            <a href="{% url 'schedule_detail' schedule.pk %}" class="btn btn-primary btn-sm mt-3">View Full Schedule</a>
+        </div>
+
+        <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
+            <a class="nav-link" href="{% url 'profile_view' schedule.user.pk %}">
+                <div>
+                Posted by <strong>{{ schedule.user.username }}</strong>
+                <img src="{{ schedule.user.profile_picture.url }}" alt="Profile Picture"
+                     class="rounded-circle" width="35" height="35" style="object-fit: cover;">
                 </div>
-
-                <div class="card-footer text-muted small">
-                    <a class="nav-link" href="{% url 'profile_view' schedule.user.id %}">
-                        Posted by <strong>{{ schedule.user.username }}</strong>
-                        <img src="{{ schedule.user.profile_picture.url }}" alt="Profile Picture"
-                        class="rounded-circle" width="35" height="35" style="object-fit: cover;">
-                    </a>
+            </a>
+            {% if schedule.user == user or is_moderator %}
+                <div>
+                    <a href="{% url 'schedule_edit' schedule.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'schedule_delete' schedule.pk %}" class="btn btn-danger btn-sm">Delete</a>
                 </div>
+            {% endif %}
             </div>
         </div>
+    </div>
         {% empty %}
         <p>No schedules found.</p>
         {% endfor %}

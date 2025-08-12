@@ -4,44 +4,64 @@
 
 {% block content %}
     <div class="container py-5">
-    <div class="text-center mb-5">
-        <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3" width="120" height="120" style="object-fit: cover;">
-        <h2 class="fw-bold">{{ user.username }}</h2>
-        <p class="text-muted">{{ user.email }}</p>
-        <p>Joined: {{ user.date_joined | date:"M d, Y" }}</p>
-    </div>
+        <div class="text-center mb-5">
+            <img src="{{ profile_user.profile_picture.url }}" alt="Profile Picture"
+            class="rounded-circle mb-3" width="120" height="120" style="object-fit: cover;">
+            <h2 class="fw-bold">{{ profile_user.username }}</h2>
+            <p class="text-muted">{{ profile_user.email }}</p>
+            <p>Joined: {{ profile_user.date_joined | date:"M d, Y" }}</p>
+
+            <div class="mt-3">
+                <a href="{% url 'profile_edit' profile_user.id %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'profile_delete' profile_user.id %}" class="btn btn-sm btn-danger">
+                Delete
+                </a>
+            </div>
+        </div>
+
 
     <hr>
 
     <h3 class="mb-4">Your Schedules</h3>
     {% for schedule in schedules %}
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <img src="{{ schedule.picture.url }}" class="card-img-top" alt="{{ schedule.title }}" style="height: 200px; object-fit: cover;">
+        <div class="card shadow-sm">
+            <img src="{{ schedule.picture.url }}" class="card-img-top" alt="{{ schedule.title }}" style="height: 200px; object-fit: cover;">
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ schedule.title }}</h5>
-                    <p class="card-text">{{ schedule.description|truncatewords:20 }}</p>
+        <div class="card-body">
+            <h5 class="card-title">{{ schedule.title }}</h5>
+            <p class="card-text">{{ schedule.description|truncatewords:20 }}</p>
 
-                    <ul class="list-group list-group-flush">
-                        {% for task in schedule.tasks.all|slice:":2" %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ task.description }}</span>
-                                <span class="badge bg-secondary">{{ task.time|time:"H:i" }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
+            <ul class="list-group list-group-flush">
+                {% for task in schedule.tasks.all|slice:":2" %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ task.description }}</span>
+                        <span class="badge bg-secondary">{{ task.time|time:"H:i" }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
 
-                    <a href="{% url 'schedule_detail' schedule.pk %}" class="btn btn-primary btn-sm mt-3">View Full Schedule</a>
-                </div>
+            <a href="{% url 'schedule_detail' schedule.pk %}" class="btn btn-primary btn-sm mt-3">View Full Schedule</a>
+        </div>
 
-                <div class="card-footer text-muted small">
-                    Posted by <strong>{{ schedule.user.username }}</strong>
-                    <img src="{{ schedule.user.profile_picture.url }}" alt="Profile Picture"
+        <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
+            <a class="nav-link" href="{% url 'profile_view' schedule.user.pk %}">
+                <div>
+                Posted by <strong>{{ schedule.user.username }}</strong>
+                <img src="{{ schedule.user.profile_picture.url }}" alt="Profile Picture"
                      class="rounded-circle" width="35" height="35" style="object-fit: cover;">
                 </div>
+            </a>
+            {% if profile_user == user or is_moderator %}
+                <div>
+                    <a href="{% url 'schedule_edit' schedule.id %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'schedule_delete' schedule.id %}" class="btn btn-danger btn-sm">Delete</a>
+                </div>
+            {% endif %}
             </div>
         </div>
+    </div>
+
         {% empty %}
         <p>No schedules found.</p>
         {% endfor %}

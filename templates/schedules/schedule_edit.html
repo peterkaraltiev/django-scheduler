@@ -1,0 +1,77 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Edit Schedule{% endblock %}
+
+{% block content %}
+<h2>Edit Schedule</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <h4>Tasks</h4>
+    <div id="formset-container">
+        {% for form in formset.forms %}
+            <div class="card p-3 mb-2 task-card">
+                {{ form.as_p }}
+                <button type="button" class="btn btn-danger btn-sm remove-task-btn">Remove</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    {{ formset.management_form }}
+
+    <template id="empty-form">
+        <div class="card p-3 mb-2 task-card">
+            {{ formset.empty_form.as_p|safe }}
+            <button type="button" class="btn btn-danger btn-sm remove-task-btn">Remove</button>
+        </div>
+    </template>
+
+    <button type="button" class="btn btn-outline-primary mb-3" id="add-task-btn">Add Task</button>
+    <br>
+    <button type="submit" class="btn btn-success">Save Changes</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const totalFormsInput = document.getElementById('id_form-TOTAL_FORMS');
+    if (!totalFormsInput) {
+        console.error('Management form not found!');
+        return;
+    }
+
+    let formIdx = parseInt(totalFormsInput.value);
+
+    // Function to add delete functionality to a card
+    function attachRemoveHandler(button) {
+        button.addEventListener('click', function () {
+            const card = button.closest('.task-card');
+            const deleteInput = card.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            if (deleteInput) {
+                deleteInput.checked = true; // Mark for deletion
+                card.style.display = 'none'; // Hide from UI
+            } else {
+                // If it's a new unsaved task, just remove it from the DOM
+                card.remove();
+                totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+            }
+        });
+    }
+
+    // Attach handlers to existing forms
+    document.querySelectorAll('.remove-task-btn').forEach(attachRemoveHandler);
+
+    // Add new task handler
+    document.getElementById('add-task-btn').addEventListener('click', function () {
+        const emptyFormHtml = document.getElementById('empty-form').innerHTML.replace(/__prefix__/g, formIdx);
+        document.getElementById('formset-container').insertAdjacentHTML('beforeend', emptyFormHtml);
+        const newCard = document.querySelectorAll('.task-card')[document.querySelectorAll('.task-card').length - 1];
+        attachRemoveHandler(newCard.querySelector('.remove-task-btn'));
+        formIdx++;
+        totalFormsInput.value = formIdx;
+    });
+});
+</script>
+{% endblock %}
